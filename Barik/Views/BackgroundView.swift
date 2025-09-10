@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct BackgroundView: View {
+    @StateObject private var systemMenuBarDetector = SystemMenuBarDetector()
     @ObservedObject var configManager = ConfigManager.shared
 
     private func spacer(_ geometry: GeometryProxy) -> some View {
@@ -33,6 +34,8 @@ struct BackgroundView: View {
                         .id("blur")
                 }
             }
+            .opacity(systemMenuBarDetector.isSystemMenuBarVisible ? 0.0 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: systemMenuBarDetector.isSystemMenuBarVisible)
         }
     }
 }

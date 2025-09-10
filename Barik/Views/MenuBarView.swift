@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MenuBarView: View {
     @ObservedObject var configManager = ConfigManager.shared
+    @StateObject private var systemMenuBarDetector = SystemMenuBarDetector()
 
     var body: some View {
         let theme: ColorScheme? =
@@ -33,6 +34,8 @@ struct MenuBarView: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, configManager.config.experimental.foreground.horizontalPadding)
         .background(.black.opacity(0.001))
+        .opacity(systemMenuBarDetector.isSystemMenuBarVisible ? 0.0 : 1.0)
+        .animation(.easeInOut(duration: 0.2), value: systemMenuBarDetector.isSystemMenuBarVisible)
         .preferredColorScheme(theme)
     }
 
