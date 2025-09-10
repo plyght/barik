@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BackgroundView: View {
-    @StateObject private var systemMenuBarDetector = SystemMenuBarDetector()
+    @ObservedObject private var systemMenuBarDetector = SystemMenuBarDetector.shared
     @ObservedObject var configManager = ConfigManager.shared
 
     private func spacer(_ geometry: GeometryProxy) -> some View {

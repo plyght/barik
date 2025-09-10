@@ -2,7 +2,7 @@ import SwiftUI
 
 struct MenuBarView: View {
     @ObservedObject var configManager = ConfigManager.shared
-    @StateObject private var systemMenuBarDetector = SystemMenuBarDetector()
+    @ObservedObject private var systemMenuBarDetector = SystemMenuBarDetector.shared
 
     var body: some View {
         let theme: ColorScheme? =
