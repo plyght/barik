@@ -197,7 +197,7 @@ final class NowPlayingManager: ObservableObject {
     private var cancellable: AnyCancellable?
 
     private init() {
-        cancellable = Timer.publish(every: 0.3, on: .main, in: .common)
+        cancellable = Timer.publish(every: 1.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.updateNowPlaying()

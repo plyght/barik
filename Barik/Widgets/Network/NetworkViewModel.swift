@@ -140,9 +140,21 @@ final class NetworkStatusViewModel: NSObject, ObservableObject,
     private func updateWiFiInfo() {
         let client = CWWiFiClient.shared()
         if let interface = client.interface() {
-            self.ssid = interface.ssid() ?? "Not connected"
-            self.rssi = interface.rssiValue()
-            self.noise = interface.noiseMeasurement()
+            let newSSID = interface.ssid() ?? "Not connected"
+            let newRSSI = interface.rssiValue()
+            let newNoise = interface.noiseMeasurement()
+            
+            // Only update if values have changed to reduce unnecessary UI updates
+            if newSSID != self.ssid {
+                self.ssid = newSSID
+            }
+            if newRSSI != self.rssi {
+                self.rssi = newRSSI
+            }
+            if newNoise != self.noise {
+                self.noise = newNoise
+            }
+            
             if let wlanChannel = interface.wlanChannel() {
                 let band: String
                 switch wlanChannel.channelBand {
@@ -157,16 +169,21 @@ final class NetworkStatusViewModel: NSObject, ObservableObject,
                 @unknown default:
                     band = "unknown"
                 }
-                self.channel = "\(wlanChannel.channelNumber) (\(band))"
-            } else {
+                let newChannel = "\(wlanChannel.channelNumber) (\(band))"
+                if newChannel != self.channel {
+                    self.channel = newChannel
+                }
+            } else if self.channel != "N/A" {
                 self.channel = "N/A"
             }
         } else {
             // Interface not available – Wi‑Fi is off.
-            self.ssid = "No interface"
-            self.rssi = 0
-            self.noise = 0
-            self.channel = "N/A"
+            if self.ssid != "No interface" {
+                self.ssid = "No interface"
+                self.rssi = 0
+                self.noise = 0
+                self.channel = "N/A"
+            }
         }
     }
 

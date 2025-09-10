@@ -8,6 +8,8 @@ class SystemMenuBarDetector: ObservableObject {
     private var mouseTracker: Any?
     private var timer: Timer?
     private var lastMouseY: CGFloat = 0
+    private var lastWindowListCheck: TimeInterval = 0
+    private var cachedMenuBarState: Bool = false
     
     init() {
         startMonitoring()
@@ -24,7 +26,7 @@ class SystemMenuBarDetector: ObservableObject {
         }
         
         // Lightweight periodic check
-        timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             self?.periodicCheck()
         }
     }
@@ -92,6 +94,15 @@ class SystemMenuBarDetector: ObservableObject {
     }
     
     private func isSystemMenuBarCurrentlyVisible() -> Bool {
+        let currentTime = CACurrentMediaTime()
+        
+        // Cache expensive window list queries - only check every 0.5 seconds
+        if currentTime - lastWindowListCheck < 0.5 {
+            return cachedMenuBarState
+        }
+        
+        lastWindowListCheck = currentTime
+        
         // Check if there are system menu bar related windows visible
         let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
         let windowList = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] ?? []
@@ -104,16 +115,22 @@ class SystemMenuBarDetector: ObservableObject {
             
             // Check for system menu bar windows at the top of the screen
             if (name.contains("Menu") || name.contains("menubar") || layer == 25) && y <= 5 {
+                cachedMenuBarState = true
                 return true
             }
         }
         
         // Also check mouse position as backup
         let mouseLocation = NSEvent.mouseLocation
-        guard let screen = NSScreen.main else { return false }
+        guard let screen = NSScreen.main else { 
+            cachedMenuBarState = false
+            return false 
+        }
         
         // If mouse is at very top, assume menu bar might be showing
         let screenHeight = screen.frame.height
-        return mouseLocation.y >= screenHeight - 2
+        let result = mouseLocation.y >= screenHeight - 2
+        cachedMenuBarState = result
+        return result
     }
 }

@@ -1,6 +1,32 @@
 import EventKit
 import SwiftUI
 
+private class FormatterCache {
+    private var cache: [String: DateFormatter] = [:]
+    
+    func formatter(for pattern: String, timeZone: String?) -> DateFormatter {
+        let key = "\(pattern)_\(timeZone ?? "current")"
+        
+        if let cached = cache[key] {
+            return cached
+        }
+        
+        let formatter = DateFormatter()
+        formatter.setLocalizedDateFormatFromTemplate(pattern)
+        
+        if let timeZone = timeZone,
+            let tz = TimeZone(identifier: timeZone)
+        {
+            formatter.timeZone = tz
+        } else {
+            formatter.timeZone = TimeZone.current
+        }
+        
+        cache[key] = formatter
+        return formatter
+    }
+}
+
 struct TimeWidget: View {
     @EnvironmentObject var configProvider: ConfigProvider
     var config: ConfigData { configProvider.config }
@@ -20,6 +46,7 @@ struct TimeWidget: View {
     let calendarManager: CalendarManager
 
     @State private var rect = CGRect()
+    private let formatterCache = FormatterCache()
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common)
         .autoconnect()
@@ -67,18 +94,7 @@ struct TimeWidget: View {
 
     // Format the current time.
     private func formattedTime(pattern: String, from time: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.setLocalizedDateFormatFromTemplate(pattern)
-
-        if let timeZone = timeZone,
-            let tz = TimeZone(identifier: timeZone)
-        {
-            formatter.timeZone = tz
-        } else {
-            formatter.timeZone = TimeZone.current
-        }
-
-        return formatter.string(from: time)
+        return formatterCache.formatter(for: pattern, timeZone: timeZone).string(from: time)
     }
 
     // Create text for the calendar event.
