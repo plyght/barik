@@ -35,6 +35,7 @@ struct BackgroundView: View {
                 }
             }
             .opacity(systemMenuBarDetector.isSystemMenuBarVisible ? 0.0 : 1.0)
+            .offset(y: systemMenuBarDetector.isSystemMenuBarVisible ? 8 : 0)
             .animation(.easeInOut(duration: 0.2), value: systemMenuBarDetector.isSystemMenuBarVisible)
         }
     }
